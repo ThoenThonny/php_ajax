@@ -1,3 +1,7 @@
+<?php
+    include "./db.php";
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,28 +30,32 @@
                     <th>ACTION</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="tbl">
+                <?php 
+                    $result = $conn->query("SELECT * FROM employee_tbl");
+                    while($row= $result->fetch_assoc()):?>
                 <tr class=" align-middle">
-                    <td >101</td>
+                    <td ><?= $row['emp_id'] ?></td>
                     <td>
-                        <img class=" rounded-circle object-fit-cover" style="width: 55px; height: 55px;" src="https://i.pinimg.com/736x/ee/f2/66/eef2667d2b5a197f8a5df9e2f828f4fb.jpg" alt="">
+                        <img class=" rounded-circle object-fit-cover" style="width: 55px; height: 55px;" src="uploads/<?= $row['emp_profile'] ?>" alt="">
                     </td>
-                    <td >Sok Heng</td>
-                    <td >Male</td>
-                    <td>1000$</td>
-                    <td>heng123@gmail.com</td>
+                    <td ><?= $row['emp_name'] ?></td>
+                    <td ><?= $row['emp_gender'] ?></td>
+                    <td><?= $row['emp_salary'] ?>$</td>
+                    <td><?= $row['emp_email'] ?></td>
                     <td>
                         <button id="edit" class=" btn btn-warning">edit</button>
                         <button id="delete" class=" btn btn-danger">delete</button>
                     </td>
                 </tr>
+                <?php endwhile;?>
             </tbody>
         </table>
     </div>
 
     <div class=" opactity"></div>
     <!-- modal -->
-    <form class=" p-3 bg-white shadow rounded-4" style="width: 450px; height: auto;" id="myfrm" action="">
+    <form enctype="multipart/form-data" class=" p-3 bg-white shadow rounded-4" style="width: 450px; height: auto;" id="myfrm" action="#">
         <div class=" w-100 d-flex justify-content-between align-align-items-center">
             <h3 class=" fs-4" id="title">Form Model</h3>
         <i id="close" style="cursor: pointer;" class="bi bi-x fs-3 "></i>
@@ -75,13 +83,13 @@
 
          <div class="w-100 mt-2">
             <label class=" form-label fs-5 fw-medium" for="">Salary</label>
-            <input type="email" id="salary" name="salary" placeholder="enter salary($)" class=" form-control" >
+            <input type="number" id="salary" name="salary" placeholder="enter salary($)" class=" form-control" >
         </div>
 
          <div class="w-100 mt-2">
             <label class=" form-label fs-5 fw-medium" for="">Profile</label>
             <input type="file" id="prf" name="prf" class=" form-control" >
-            <img class=" mt-3 object-fit-cover rounded-2" style="width: 130px; height: 130px;" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="">
+            <img id="preview" class=" mt-3 object-fit-cover rounded-2" style="width: 130px; height: 130px;" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="">
         </div>
         <button type="submit" id="save" class=" btn btn-primary w-100 mt-2">Save</button>
         <button type="reset" class=" btn btn-danger w-100 mt-2">Cancel</button>
@@ -99,5 +107,50 @@
        $(".opactity").fadeOut(300)
         $("#myfrm").fadeOut(300)
         $("#title").text(" ")
+    })
+    $("#prf").change(function(e){
+        const file = e.target.files[0]
+        const readfile = new FileReader()
+        readfile.onload = function(){
+             $("#preview").attr("src",readfile.result)
+        }
+        readfile.readAsDataURL(file)
+    })
+
+    // insert data with ajax
+    $("#myfrm").submit(function(e){
+        e.preventDefault()
+        const formdata = new FormData(this)
+        $.ajax({
+            url: "./insert.php",
+            method:"POST",
+            data:formdata,
+            contentType:false,
+            processData:false,
+            success:function(res){
+                const item = JSON.parse(res)
+                $("#tbl").append(`
+                <tr class=" align-middle">
+                    <td >${item.emp_id}</td>
+                    <td>
+                        <img class=" rounded-circle object-fit-cover" style="width: 55px; height: 55px;" src="uploads/${item.emp_profile}" alt="">
+                    </td>
+                    <td >${item.emp_name}</td>
+                    <td >${item.emp_gender}</td>
+                    <td>${item.emp_salary}$</td>
+                    <td>${item.emp_email}</td>
+                    <td>
+                        <button id="edit" class=" btn btn-warning">edit</button>
+                        <button id="delete" class=" btn btn-danger">delete</button>
+                    </td>
+                </tr>
+                `)
+                $(".opactity").fadeOut(300)
+                $("#myfrm").fadeOut(300)
+                 $("#title").text(" ")
+
+            }
+
+        })
     })
 </script>
