@@ -105,6 +105,25 @@ include "./db.php";
         <button type="submit" id="save" class=" btn btn-primary w-100 mt-2">Save</button>
         <button type="reset" class=" btn btn-danger w-100 mt-2">Cancel</button>
     </form>
+
+    <!-- modal delete -->
+
+<div style="width: 400px; display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:9999;" id="deleteModal" class="p-4 bg-white shadow rounded-4">
+    
+    <div class="d-flex justify-content-between align-items-center">
+        <h4 class="text-danger">Delete Employee</h4>
+    </div>
+
+    <p class="mt-3">Are you sure you want to delete this employee?</p>
+    <span  id="delete_name" class=" mt-3 fs-4 fw-medium" ></span>
+     
+    <input type="hidden" id="delete_id">
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+        <button class="btn btn-secondary" id="cancel-delete">Cancel</button>
+        <button class="btn btn-danger" id="confirm-delete">Yes, Delete</button>
+    </div>
+</div>
 </body>
 
 </html>
@@ -218,5 +237,36 @@ include "./db.php";
         $("#title").text("Edit Employee")
         $("#save").text("Update");
 
+    })
+    $(document).on("click", "#delete",function(){
+        let tr = $(this).closest("tr");
+        let id = tr.attr("data-id");
+        let name = tr.attr("data-name");
+        
+        $("#delete_name").text(name);
+        $("#delete_id").val(id);
+
+        $(".opactity").fadeIn(300);
+        $("#deleteModal").fadeIn(300);
+    })
+
+    $("#confirm-delete").click(function(){
+        const id = $("#delete_id").val();
+         $.ajax({
+            url:"delete.php",
+            method: "POST",
+            data: { emp_id : id},
+            success:function(res){
+                
+                let tr = $("#row-"+id).remove();
+                $(".opactity").fadeOut(300);
+                $("#deleteModal").fadeOut(300);
+            }
+         })
+    })
+
+    $("#cancel-delete").click(function(){
+        $(".opactity").fadeOut(300);
+        $("#deleteModal").fadeOut(300);
     })
 </script>
